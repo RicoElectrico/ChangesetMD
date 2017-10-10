@@ -53,10 +53,16 @@ class ChangesetMD():
     def insertNew(self, connection, id, userId, createdAt, minLat, maxLat, minLon, maxLon, closedAt, open, numChanges, userName, tags, comments):
         cursor = connection.cursor()
         if self.createGeometry:
+            minLat_, maxLat_, minLon_, maxLon_ = minLat, maxLat, minLon, maxLon
+            if all([minLat_, maxLat_, minLon_, maxLon_]):
+                if maxLon_ == minLon_:
+                    maxLon_ = float(maxLon_) + 0.0000001
+                if maxLat_ == minLat_:
+                    maxLat_ = float(maxLat_) + 0.0000001
             cursor.execute('''INSERT into osm_changeset
                     (id, user_id, created_at, min_lat, max_lat, min_lon, max_lon, closed_at, open, num_changes, user_name, tags, geom)
                     values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,ST_SetSRID(ST_MakeEnvelope(%s,%s,%s,%s), 4326))''',
-                    (id, userId, createdAt, minLat, maxLat, minLon, maxLon, closedAt, open, numChanges, userName, tags, minLon, minLat, maxLon, maxLat))
+                    (id, userId, createdAt, minLat, maxLat, minLon, maxLon, closedAt, open, numChanges, userName, tags, minLon_, minLat_, maxLon_, maxLat_))
         else:
             cursor.execute('''INSERT into osm_changeset
                     (id, user_id, created_at, min_lat, max_lat, min_lon, max_lon, closed_at, open, num_changes, user_name, tags)
